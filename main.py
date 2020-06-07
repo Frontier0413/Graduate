@@ -1,10 +1,27 @@
 import movie
 import spider
 import sys
+from threading import Thread, Lock
 
 
 def get_match_str(str1, str2, str3,str4):
     return 'match (node1:' + str1 + ')-[:' + str2 + ']->(node:' + str3 + ' {name:"' + str4 + '"}) return node1'
+
+def sys_init():
+    spider.get_movie_url()
+    movie.write_to_database()
+    print('init done.')
+
+def get_elems_by_input(url_list : list):
+    max_thread_num = 8
+    running_thread_num = 0
+    thread_lock = Lock()
+    for i in url_list:
+        if running_thread_num < max_thread_num:
+            thread_lock.acquire()
+            Thread(target = spider.get_movie_elems(i)).start()
+            running_thread_num += 1
+            thread_lock.release()
 
 def main():
     if len(sys.argv) > 1:
@@ -12,9 +29,8 @@ def main():
             if len(sys.argv) > 2:
                 print('error! too many arguments')
                 exit(1)
-            spider.get_movie_url()
-            movie.write_to_database()
-            print('init done.')
+            thread0 = Thread(target = sys_init)
+            thread0.start()
 
         elif sys.argv[1] == 'clear':
             if len(sys.argv) > 2:
@@ -22,6 +38,7 @@ def main():
                 exit(1)
             movie.graph.delete_all()
             print('delete all nodes and relationships, done.')
+            exit(0)
         
         elif sys.argv[1] == '-f':
             if len(sys.argv) == 2:
@@ -35,9 +52,10 @@ def main():
             url_list = open(url_file, 'r').readlines()
             for url in url_list:
                 spider.get_movie_elems(url)
-            print('get movie elements done.')
-            movie.write_to_database()
-            print('write to database done.')
+            print('get movie elements, done.')
+            thread1 = Thread(target = movie.write_to_database)
+            thread1.start()
+            print('write to database, done.')
 
         elif sys.argv[1] == '-s':
             if len(sys.argv) == 2:
@@ -49,8 +67,9 @@ def main():
 
             url = sys.argv[1]
             spider.get_movie_elems(url)
-            movie.write_to_database()
-            print('write to database done.')
+            print('get movie infomation, done.')
+            thread1 = Thread(target = movie.write_to_database)
+            thread1.start()
     else:
         print('please input argument')
         print('init        :  使用豆瓣电影top250作为默认数据集构建知识图谱')
@@ -58,6 +77,7 @@ def main():
         print('-s urlname  :  爬取指定url到数据并保存到数据库中')
 
     while(True):
+        print('**************************************************************************************')
         print('please input query, entry q or exit to exit.')
         print('use ? to represent result you want, use - to represent null')
         print('please input movie_name  movie_year  movie_director  movie_screenwriter  movie_actor  movie_type  movie_country')
@@ -121,6 +141,7 @@ def main():
             for result in match_result6:
                 match_result[result] += 1
 
+            sorted(match_result.values(), reverse = True)
             for i,_ in match_result:
                 print(i)
 
