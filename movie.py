@@ -1,5 +1,5 @@
 import time
-from Threading import Lock, Thread
+from threading import Lock, Thread
 from py2neo import Graph, Node, Relationship, NodeMatcher
 import spider
 
@@ -362,30 +362,29 @@ class movie:
 
 
 def write_to_database():
-    while True:
-        spider.file_lock.acquire()
-        mve = movie()
-        with open('movie.txt', 'wr', encoding='utf-8') as f:
-            i = 1
+    #while True:
+        # spider.file_lock.acquire()
+    mve = movie()
+    with open('movie.txt', 'w+', encoding='utf-8') as f:
+        i = 1
+        s = f.readline()
+        while s:
+            mve.get_name(s)
+            print('writing tne num ' + str(i) + ' movie : ' + mve.movie_name[0])
+            i += 1
             s = f.readline()
-            while s:
-                mve.get_name(s)
-                print('writing tne num ' + str(i) + ' movie : ' + mve.movie_name[0])
-                i += 1
-                s = f.readline()
-                mve.get_year(s)
+            mve.get_year(s)
+            s2 = f.readline()
+            while s2 != '\n':
+                s = s2
+                mve.get_detial(s)
                 s2 = f.readline()
-                while s2 != '\n':
-                    s = s2
-                    mve.get_detial(s)
-                    s2 = f.readline()
-                mve.get_score(s)
-                mve.show_movie()
-                mve.write_to_neo4j()
-                mve.clear()
-                s = f.readline()
-
+            mve.get_score(s)
+            mve.show_movie()
+            mve.write_to_neo4j()
+            mve.clear()
+            s = f.readline()
         f.truncate()
-        spider.file_lock.release()
+        # spider.file_lock.release()
         # 每10s注入一次数据库
-        time.sleep(10)
+        #time.sleep(10)

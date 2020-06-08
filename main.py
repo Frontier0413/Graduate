@@ -1,7 +1,7 @@
 import movie
 import spider
 import sys
-from threading import Thread, Lock
+# from threading import Thread, Lock
 
 
 def get_match_str(str1, str2, str3,str4):
@@ -12,16 +12,25 @@ def sys_init():
     movie.write_to_database()
     print('init done.')
 
+'''
 def get_elems_by_input(url_list : list):
     max_thread_num = 8
     running_thread_num = 0
-    thread_lock = Lock()
+    # thread_lock = Lock()
     for i in url_list:
         if running_thread_num < max_thread_num:
             thread_lock.acquire()
             Thread(target = spider.get_movie_elems(i)).start()
             running_thread_num += 1
             thread_lock.release()
+'''
+
+def match_result_count(match_result : dict, match_list : list):
+    for match in match_list:
+        if match in match_result.keys():
+            match_result[match] += 1
+        else:
+            match_result[match] = 1
 
 def main():
     if len(sys.argv) > 1:
@@ -29,8 +38,9 @@ def main():
             if len(sys.argv) > 2:
                 print('error! too many arguments')
                 exit(1)
-            thread0 = Thread(target = sys_init)
-            thread0.start()
+            sys_init()
+            # thread0 = Thread(target = sys_init)
+            # thread0.start()
 
         elif sys.argv[1] == 'clear':
             if len(sys.argv) > 2:
@@ -53,8 +63,9 @@ def main():
             for url in url_list:
                 spider.get_movie_elems(url)
             print('get movie elements, done.')
-            thread1 = Thread(target = movie.write_to_database)
-            thread1.start()
+            movie.write_to_database()
+            # thread1 = Thread(target = movie.write_to_database)
+            # thread1.start()
             print('write to database, done.')
 
         elif sys.argv[1] == '-s':
@@ -65,11 +76,13 @@ def main():
                 print('error, too many arguments!')
                 exit(1)
 
-            url = sys.argv[1]
-            spider.get_movie_elems(url)
+            url = sys.argv[2]
+            # print(url)
+            spider.get_movie_elems(str(url))
             print('get movie infomation, done.')
-            thread1 = Thread(target = movie.write_to_database)
-            thread1.start()
+            movie.write_to_database()
+            # thread1 = Thread(target = movie.write_to_database)
+            # thread1.start()
     else:
         print('please input argument')
         print('init        :  使用豆瓣电影top250作为默认数据集构建知识图谱')
@@ -128,22 +141,12 @@ def main():
             match_result = {}
 
             # 统计不同查询方式活得的结果，按出现次数输出，某种程度上来说这也是最简单的推荐算法
-            for result in match_result1:
-                match_result[result] += 1
-            for result in match_result2:
-                match_result[result] += 1
-            for result in match_result3:
-                match_result[result] += 1
-            for result in match_result4:
-                match_result[result] += 1
-            for result in match_result5:
-                match_result[result] += 1
-            for result in match_result6:
-                match_result[result] += 1
+            match_result_count(match_result, match_result1)
 
             sorted(match_result.values(), reverse = True)
-            for i,_ in match_result:
-                print(i)
+            for key in match_result.keys():
+                print(key['name'])
+                
 
 if __name__ == '__main__':
     main()
