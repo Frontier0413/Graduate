@@ -142,6 +142,11 @@ def main():
 
             # 统计不同查询方式活得的结果，按出现次数输出，某种程度上来说这也是最简单的推荐算法
             match_result_count(match_result, match_result1)
+            match_result_count(match_result, match_result2)
+            match_result_count(match_result, match_result3)
+            match_result_count(match_result, match_result4)
+            match_result_count(match_result, match_result5)
+            match_result_count(match_result, match_result6)
 
             sorted(match_result.values(), reverse = True)
             for key in match_result.keys():

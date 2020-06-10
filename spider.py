@@ -3,7 +3,9 @@ from fake_useragent import UserAgent
 from bs4 import BeautifulSoup
 from selenium import webdriver
 import movie
+import get_ip_pool
 # from threading import Thread, Lock
+
 
 url_base = 'https://movie.douban.com/top250?start='
 options = webdriver.ChromeOptions()
@@ -24,7 +26,7 @@ def get_movie_url():
     # global running
     while (i < 226):
         url_to_get = url_base + str(i) + '&filter='
-        response = requests.get(url = url_to_get, headers=headers, timeout = 10)
+        response = requests.get(url = url_to_get, headers=headers, timeout = 10, proxies = get_ip_pool.random_ip())
         soup = BeautifulSoup(response.text, 'lxml')
         urls = soup.select('div.info > div.hd > a')
         for elems in urls:
@@ -52,6 +54,7 @@ def get_movie_elems(url):
     # global running
     # driver_lock.acquire()
     # print(url)
+    chromeOptions.add_argument("--proxy-server=http://202.20.16.82:10152")
     driver.get(url)
     # driver_lock.release()
     soup = BeautifulSoup(driver.page_source, 'lxml')
